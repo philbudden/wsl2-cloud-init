@@ -8,6 +8,11 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
 }
 
+function Get-LinuxScriptBytes([string]$Path) {
+    $scriptText = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($Path))
+    Write-Output -NoEnumerate ([System.Text.UTF8Encoding]::new($false).GetBytes(($scriptText -replace "`r`n?", "`n")))
+}
+
 function Invoke-Setup([string]$Username, [string]$Path, [switch]$Force, [string[]]$Registered) {
     & $setup -LinuxUsername $Username -OutputPath $Path -SkipWslPreflight -TestRegisteredDistributions $Registered -Force:$Force
 }
@@ -29,7 +34,7 @@ try {
     Assert-True ($content -match 'systemd=true') 'Explicit systemd setting missing.'
 
     foreach ($scriptName in @('bootstrap', 'validate')) {
-        $source = [System.IO.File]::ReadAllBytes((Join-Path $repoRoot "scripts/$scriptName.sh"))
+        $source = Get-LinuxScriptBytes (Join-Path $repoRoot "scripts/$scriptName.sh")
         $encoded = [regex]::Match($content, "path: /usr/local/lib/wsl-development-environment/$scriptName\.sh[\s\S]*?content: ([A-Za-z0-9+/=]+)").Groups[1].Value
         Assert-True (-not [string]::IsNullOrEmpty($encoded)) "$scriptName payload is missing."
         Assert-True ([System.Linq.Enumerable]::SequenceEqual($source, [Convert]::FromBase64String($encoded))) "$scriptName payload changed during rendering."

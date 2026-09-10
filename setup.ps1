@@ -39,8 +39,14 @@ function Get-RequiredFile([string]$Path, [string]$Description) {
     return (Get-Item -LiteralPath $Path)
 }
 
-function Get-FileBase64([string]$Path) {
-    return [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($Path))
+function Get-LinuxScriptBytes([string]$Path) {
+    $scriptText = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($Path))
+    $linuxText = $scriptText -replace "`r`n?", "`n"
+    Write-Output -NoEnumerate ([System.Text.UTF8Encoding]::new($false).GetBytes($linuxText))
+}
+
+function Get-LinuxScriptBase64([string]$Path) {
+    return [Convert]::ToBase64String((Get-LinuxScriptBytes $Path))
 }
 
 function Assert-LinuxUsername([string]$Username) {
@@ -107,7 +113,7 @@ if ((Test-Path -LiteralPath $OutputPath -PathType Leaf) -and $Force) {
 }
 
 $template = [System.IO.File]::ReadAllText($templatePath, [System.Text.UTF8Encoding]::new($false))
-$rendered = $template.Replace('__LINUX_USERNAME__', $LinuxUsername).Replace('__BOOTSTRAP_B64__', (Get-FileBase64 $bootstrapPath)).Replace('__VALIDATE_B64__', (Get-FileBase64 $validatePath))
+$rendered = $template.Replace('__LINUX_USERNAME__', $LinuxUsername).Replace('__BOOTSTRAP_B64__', (Get-LinuxScriptBase64 $bootstrapPath)).Replace('__VALIDATE_B64__', (Get-LinuxScriptBase64 $validatePath))
 
 if ($rendered -match $tokenPattern) {
     Fail 'Rendering failed: unresolved template token remains in generated user-data.'
@@ -131,7 +137,7 @@ foreach ($payload in @(
     catch {
         Fail "Rendering failed: $($payload.Name) payload is not valid base64. $($_.Exception.Message)"
     }
-    if (-not [System.Linq.Enumerable]::SequenceEqual([byte[]]$decoded, [System.IO.File]::ReadAllBytes($payload.Path))) {
+    if (-not [System.Linq.Enumerable]::SequenceEqual([byte[]]$decoded, (Get-LinuxScriptBytes $payload.Path))) {
         Fail "Rendering failed: $($payload.Name) payload does not round-trip."
     }
 }
