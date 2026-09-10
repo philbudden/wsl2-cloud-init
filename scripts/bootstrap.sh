@@ -146,6 +146,10 @@ main() {
       "/home/$TARGET_USER/Volumes/sql-server/log" \
       "/home/$TARGET_USER/Volumes/sftp/testuser/upload"
 
+  if ! sudo -u "$TARGET_USER" docker network inspect local-network >/dev/null 2>&1; then
+      sudo -u "$TARGET_USER" docker network create local-network
+  fi
+
   check_installation
   write_success_marker
   log "Bootstrap completed successfully for $TARGET_USER. Restart WSL before using Docker without sudo."
