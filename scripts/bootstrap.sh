@@ -67,7 +67,7 @@ write_docker_repository() {
   trap 'rm -f "${key_temp:-}" "${source_temp:-}"' RETURN
 
   log 'Fetching Docker apt signing key.'
-  curl --fail --silent --show-error --location --retry 3 \
+  curl --fail --silent --show-error --location --retry 3 --connect-timeout 15 --max-time 120 \
     --output "$key_temp" \
     'https://download.docker.com/linux/ubuntu/gpg'
   install -o root -g root -m 0644 "$key_temp" "$DOCKER_KEYRING_PATH"
