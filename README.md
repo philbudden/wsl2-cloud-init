@@ -34,9 +34,11 @@ wsl --install Ubuntu-24.04
 
 Cloud-init consumes this distribution-specific file only on the distribution's first launch. If Ubuntu is already registered, do not assume a newly rendered file will apply; use the recovery guidance added in a later phase or seek support before making any destructive WSL change.
 
-## Phase 1 status
+## Current implementation status
 
-Phase 1 provides deterministic rendering only. The embedded `bootstrap.sh` and `validate.sh` are intentional stubs so the generated cloud-config has the final installation shape without provisioning packages, Docker, or user-level validation. Those capabilities arrive in later phases.
+The embedded `bootstrap.sh` provisions the shared Ubuntu baseline (`ca-certificates`, `curl`, `file`, `git`, `openssh-client`, `procps`, and `build-essential`), Docker Engine from Docker's official Ubuntu repository, Compose, Buildx, Docker service enablement, Docker-group membership, and `~/Developer` ownership. It is safe to rerun after an interrupted provision.
+
+`validate.sh` remains an intentional stub until Phase 3. Personal Git/SSH configuration, dotfiles, account authentication, VS Code extensions, and project dependencies remain outside baseline provisioning.
 
 ## Test the renderer
 
