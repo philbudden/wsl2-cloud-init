@@ -2,7 +2,7 @@
 
 This repository prepares a per-user cloud-init snapshot for a standard Ubuntu 24.04 WSL2 installation. It establishes the future shared Linux baseline; it does not configure Windows, install the distribution, authenticate accounts, install personal tooling, or add project dependencies.
 
-## Prerequisites owned by IT Ops
+## Prerequisites
 
 You or your operations team must have enabled and updated WSL, prepared Windows so `Ubuntu-24.04` can be installed without administrator rights, installed any required Windows applications (such as VS Code for example), and applied any proxy, certificate, network, endpoint-security, or application controls necessary to reach Ubuntu and Docker repositories.
 
