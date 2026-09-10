@@ -70,7 +70,7 @@ Run validation as the normal Linux user, not with `sudo`:
 validate-wsl-development-environment
 ```
 
-It checks the Ubuntu and WSL2 environment, cloud-init/bootstrap evidence, baseline tools, `~/Developer`, Docker service and non-root access, Compose, Buildx, and `docker run --rm hello-world`. The final smoke test downloads an image on its first run and therefore needs network access.
+It runs as the normal user and checks the Ubuntu and WSL2 environment, cloud-init/bootstrap evidence, baseline tools, `~/Developer`, Docker service and non-root access, Compose, Buildx, and `docker run --rm hello-world`. It uses non-interactive `sudo` only to inspect root-owned cloud-init state; Docker commands remain non-root checks. The final smoke test downloads an image on its first run and therefore needs network access.
 
 For network diagnosis only, omit that one smoke test:
 

@@ -71,10 +71,10 @@ check_systemd() {
 
 check_cloud_init() {
   local status status_exit
-  command -v cloud-init >/dev/null || return 1
-  cloud-init schema --system >/dev/null || return 1
+  command -v cloud-init sudo >/dev/null || return 1
+  sudo -n cloud-init schema --system >/dev/null || return 1
 
-  status=$(cloud-init status --long 2>&1)
+  status=$(sudo -n cloud-init status --long 2>&1)
   status_exit=$?
   case $status in
     *'status: done'*) ;;

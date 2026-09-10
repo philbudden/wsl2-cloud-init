@@ -7,6 +7,7 @@ readonly REPO_ROOT
 readonly BOOTSTRAP="$REPO_ROOT/scripts/bootstrap.sh"
 readonly VALIDATE="$REPO_ROOT/scripts/validate.sh"
 readonly TEST_USER='wsl-bootstrap-test'
+readonly TEST_SUDOERS='/etc/sudoers.d/wsl-bootstrap-test'
 FAKE_BIN=$(mktemp -d)
 readonly FAKE_BIN
 readonly -a DOCKER_CONFLICTS=(docker.io docker-compose docker-compose-v2 docker-doc docker-buildx podman-docker containerd runc)
@@ -24,6 +25,7 @@ fail() {
 [[ $(ps -p 1 -o comm= | tr -d '[:space:]') == systemd ]] || fail 'requires systemd as PID 1'
 
 cleanup() {
+  rm -f "$TEST_SUDOERS"
   userdel --remove "$TEST_USER" 2>/dev/null || true
   rm -rf "$FAKE_BIN"
 }
@@ -35,6 +37,8 @@ rm -f /etc/apt/sources.list.d/docker.sources /etc/apt/keyrings/docker.asc
 systemctl stop docker.service docker.socket 2>/dev/null || true
 
 id "$TEST_USER" >/dev/null 2>&1 || useradd --create-home --shell /bin/bash "$TEST_USER"
+printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TEST_USER" >"$TEST_SUDOERS"
+chmod 0440 "$TEST_SUDOERS"
 cat >"$FAKE_BIN/curl" <<'EOF'
 #!/usr/bin/env bash
 exit 42
@@ -58,7 +62,12 @@ case $1 in
 esac
 exit 64
 EOF
-  chmod 0755 "$FAKE_BIN/uname" "$FAKE_BIN/cloud-init"
+  cat >"$FAKE_BIN/sudo" <<'EOF'
+#!/usr/bin/env bash
+[[ $1 == '-n' ]] && shift
+exec "$@"
+EOF
+  chmod 0755 "$FAKE_BIN/uname" "$FAKE_BIN/cloud-init" "$FAKE_BIN/sudo"
   VALIDATE_PATH="$FAKE_BIN:$PATH"
 else
   VALIDATE_PATH=$PATH
