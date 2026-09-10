@@ -32,6 +32,8 @@ try {
     Assert-True ($content -match 'NOPASSWD:ALL') 'Passwordless sudo missing.'
     Assert-True ($content -match '/usr/local/lib/wsl-development-environment/bootstrap.sh') 'Bootstrap path missing.'
     Assert-True ($content -match 'systemd=true') 'Explicit systemd setting missing.'
+    Assert-True ($content -match 'path: /usr/local/bin/validate-wsl-development-environment') 'Validation command wrapper missing.'
+    Assert-True ($content -match 'exec /usr/local/lib/wsl-development-environment/validate\.sh "\$@"') 'Validation command wrapper target missing.'
 
     foreach ($scriptName in @('bootstrap', 'validate')) {
         $source = Get-LinuxScriptBytes (Join-Path $repoRoot "scripts/$scriptName.sh")

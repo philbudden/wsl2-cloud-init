@@ -38,7 +38,57 @@ Cloud-init consumes this distribution-specific file only on the distribution's f
 
 The embedded `bootstrap.sh` provisions the shared Ubuntu baseline (`ca-certificates`, `curl`, `file`, `git`, `openssh-client`, `procps`, and `build-essential`), Docker Engine from Docker's official Ubuntu repository, Compose, Buildx, Docker service enablement, Docker-group membership, and `~/Developer` ownership. It is safe to rerun after an interrupted provision.
 
-`validate.sh` remains an intentional stub until Phase 3. Personal Git/SSH configuration, dotfiles, account authentication, VS Code extensions, and project dependencies remain outside baseline provisioning.
+The installed validation command verifies the completed baseline. Personal Git/SSH configuration, dotfiles, account authentication, VS Code extensions, and project dependencies remain outside baseline provisioning.
+
+## Complete installation and validate it
+
+After Ubuntu first launches, cloud-init creates the configured user and runs the bootstrap. Confirm that cloud-init accepted the installed configuration:
+
+```bash
+sudo cloud-init schema --system
+```
+
+On Ubuntu WSL, `sudo cloud-init status --wait --long` may report `status: disabled` after DataSourceWSL provisioning has completed. Do not treat that status alone as a bootstrap failure. If the bootstrap marker is absent or `cloud-final.service` is failed, inspect the logs before proceeding:
+
+```bash
+sudo test -r /var/lib/wsl-development-environment/bootstrap-success
+sudo systemctl is-failed cloud-final.service
+sudo tail -n 100 /var/log/cloud-init.log
+sudo tail -n 100 /var/log/cloud-init-output.log
+```
+
+From PowerShell, restart WSL to refresh the new user's Docker group membership:
+
+```powershell
+wsl --shutdown
+wsl -d Ubuntu-24.04
+```
+
+Run validation as the normal Linux user, not with `sudo`:
+
+```bash
+validate-wsl-development-environment
+```
+
+It checks the Ubuntu and WSL2 environment, cloud-init/bootstrap evidence, baseline tools, `~/Developer`, Docker service and non-root access, Compose, Buildx, and `docker run --rm hello-world`. The final smoke test downloads an image on its first run and therefore needs network access.
+
+For network diagnosis only, omit that one smoke test:
+
+```bash
+validate-wsl-development-environment --skip-network-smoke-test
+```
+
+A skipped smoke test is not a full installation acceptance result; all other required checks must still pass.
+
+## Recovery
+
+Do not unregister the distribution or overwrite generated user-data to recover from a failed bootstrap. First inspect the cloud-init logs above and correct the underlying network, repository, or service issue. Then rerun the installed bootstrap as root with the normal user name:
+
+```bash
+sudo /usr/local/lib/wsl-development-environment/bootstrap.sh "$USER"
+```
+
+After it completes, run `wsl --shutdown` from PowerShell, reopen Ubuntu, and run `validate-wsl-development-environment` as the normal user.
 
 ## Test the renderer
 

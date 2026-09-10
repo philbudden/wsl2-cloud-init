@@ -5,6 +5,7 @@ set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 readonly REPO_ROOT
 readonly BOOTSTRAP="$REPO_ROOT/scripts/bootstrap.sh"
+readonly VALIDATE="$REPO_ROOT/scripts/validate.sh"
 readonly TEST_USER='wsl-bootstrap-test'
 FAKE_BIN=$(mktemp -d)
 readonly FAKE_BIN
@@ -44,6 +45,25 @@ if PATH="$FAKE_BIN:$PATH" "$BOOTSTRAP" "$TEST_USER"; then
 fi
 "$BOOTSTRAP" "$TEST_USER"
 
+if ! uname -r | grep -qi 'microsoft.*wsl2'; then
+  cat >"$FAKE_BIN/uname" <<'EOF'
+#!/usr/bin/env bash
+printf '6.6.0-microsoft-standard-WSL2\n'
+EOF
+  cat >"$FAKE_BIN/cloud-init" <<'EOF'
+#!/usr/bin/env bash
+case $1 in
+  schema) exit 0 ;;
+  status) printf 'status: disabled\n'; exit 0 ;;
+esac
+exit 64
+EOF
+  chmod 0755 "$FAKE_BIN/uname" "$FAKE_BIN/cloud-init"
+  VALIDATE_PATH="$FAKE_BIN:$PATH"
+else
+  VALIDATE_PATH=$PATH
+fi
+
 test -r /etc/apt/keyrings/docker.asc
 grep -Fx 'URIs: https://download.docker.com/linux/ubuntu' /etc/apt/sources.list.d/docker.sources
 grep -Fx 'Suites: noble' /etc/apt/sources.list.d/docker.sources
@@ -63,11 +83,13 @@ runuser --login "$TEST_USER" --command 'docker info >/dev/null'
 test -f /var/lib/wsl-development-environment/bootstrap-success
 printf 'preserve me\n' >"/home/$TEST_USER/Developer/bootstrap-rerun-sentinel"
 chown "$TEST_USER:$TEST_USER" "/home/$TEST_USER/Developer/bootstrap-rerun-sentinel"
+runuser --login "$TEST_USER" --command "PATH=$VALIDATE_PATH $VALIDATE"
 
 "$BOOTSTRAP" "$TEST_USER"
 grep -c '^Types: deb$' /etc/apt/sources.list.d/docker.sources | grep -Fx 1
 id -nG "$TEST_USER" | tr ' ' '\n' | grep -cFx docker | grep -Fx 1
 test "$(stat -c '%U' "/home/$TEST_USER/Developer")" == "$TEST_USER"
 test -f "/home/$TEST_USER/Developer/bootstrap-rerun-sentinel"
+runuser --login "$TEST_USER" --command "PATH=$VALIDATE_PATH $VALIDATE"
 
 printf 'bootstrap-integration-test.sh: PASS\n'

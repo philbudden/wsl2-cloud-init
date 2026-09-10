@@ -25,6 +25,12 @@ write_files:
     permissions: '0755'
     encoding: b64
     content: __VALIDATE_B64__
+  - path: /usr/local/bin/validate-wsl-development-environment
+    owner: root:root
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      exec /usr/local/lib/wsl-development-environment/validate.sh "$@"
 
 runcmd:
   - [ /usr/local/lib/wsl-development-environment/bootstrap.sh, __LINUX_USERNAME__ ]
