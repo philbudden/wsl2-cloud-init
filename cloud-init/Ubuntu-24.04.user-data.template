@@ -1,0 +1,36 @@
+#cloud-config
+users:
+  - name: __LINUX_USERNAME__
+    shell: /bin/bash
+    groups: [adm, sudo]
+    lock_passwd: true
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+
+write_files:
+  - path: /etc/wsl.conf
+    owner: root:root
+    permissions: '0644'
+    content: |
+      [boot]
+      systemd=true
+      [user]
+      default=__LINUX_USERNAME__
+  - path: /usr/local/lib/wsl-development-environment/bootstrap.sh
+    owner: root:root
+    permissions: '0755'
+    encoding: b64
+    content: __BOOTSTRAP_B64__
+  - path: /usr/local/lib/wsl-development-environment/validate.sh
+    owner: root:root
+    permissions: '0755'
+    encoding: b64
+    content: __VALIDATE_B64__
+  - path: /usr/local/bin/validate-wsl-development-environment
+    owner: root:root
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      exec /usr/local/lib/wsl-development-environment/validate.sh "$@"
+
+runcmd:
+  - [ /usr/local/lib/wsl-development-environment/bootstrap.sh, __LINUX_USERNAME__ ]
