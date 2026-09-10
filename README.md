@@ -138,4 +138,4 @@ The test verifies username handling, overwrite and existing-distro safeguards, U
 
 ## Continuous integration
 
-GitHub Actions runs on `ubuntu-24.04` for pushes, pull requests, and manual dispatch. It installs the required validation tools, runs ShellCheck and Bash syntax checks, exercises the focused bootstrap and validation failure tests, renders and schema-validates cloud-init through the PowerShell test, and runs the destructive bootstrap integration test. That integration test provisions a fresh disposable runner user, validates the resulting environment, reruns bootstrap, and validates again to cover both first-run convergence and practical idempotency.
+GitHub Actions runs static checks, focused failure tests, and cloud-init rendering/schema validation on `ubuntu-24.04` for pushes, pull requests, and manual dispatch. The destructive bootstrap integration test runs only for pull requests or when manually dispatched. It provisions a fresh disposable runner user, validates the resulting environment, reruns bootstrap, and validates again to cover both first-run convergence and practical idempotency.
