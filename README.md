@@ -40,10 +40,10 @@ Phase 1 provides deterministic rendering only. The embedded `bootstrap.sh` and `
 
 ## Test the renderer
 
-Run the focused PowerShell test from a shell with PowerShell 7 and `cloud-init` available:
+Run the focused PowerShell test from Windows PowerShell (included with supported Windows installations) with `cloud-init` available:
 
 ```powershell
-pwsh -File .\tests\setup.Tests.ps1
+powershell.exe -ExecutionPolicy Bypass -File .\tests\setup.Tests.ps1
 ```
 
 The test verifies username handling, overwrite and existing-distro safeguards, UTF-8-without-BOM output, token replacement, and byte-for-byte embedded scripts. It also runs `cloud-init schema --config-file` when `cloud-init` is installed; CI will treat schema validation as required.
