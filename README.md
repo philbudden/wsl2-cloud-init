@@ -4,7 +4,7 @@ This repository prepares a per-user cloud-init snapshot for a standard Ubuntu 24
 
 ## Prerequisites owned by IT Ops
 
-Before starting, IT Ops must have enabled and updated WSL, prepared Windows so `Ubuntu-24.04` can be installed without administrator rights, installed required Windows applications (including VS Code where applicable), and applied any corporate proxy, certificate, network, endpoint-security, or application controls necessary to reach Ubuntu and Docker repositories.
+You or your operations team must have enabled and updated WSL, prepared Windows so `Ubuntu-24.04` can be installed without administrator rights, installed any required Windows applications (such as VS Code for example), and applied any proxy, certificate, network, endpoint-security, or application controls necessary to reach Ubuntu and Docker repositories.
 
 This workflow deliberately does not attempt to repair or configure those prerequisites.
 
@@ -89,42 +89,6 @@ sudo /usr/local/lib/wsl-development-environment/bootstrap.sh "$USER"
 ```
 
 After it completes, run `wsl --shutdown` from PowerShell, reopen Ubuntu, and run `validate-wsl-development-environment` as the normal user.
-
-## Continue to a devcontainer-ready repository
-
-Complete the following steps only after the installed validation command passes. They are deliberate, per-engineer actions; none are performed by `setup.ps1`, cloud-init, or `bootstrap.sh`.
-
-1. Keep repositories in WSL, under `~/Developer`, rather than under `/mnt/c`.
-2. Optionally create a personal dotfiles repository from the existing [`dotfiles-template`](https://github.com/philbudden/dotfiles-template), then clone your copy and run its bootstrap:
-
-   ```bash
-   git clone git@github.com:YOUR-ACCOUNT/dotfiles.git ~/Developer/dotfiles
-   cd ~/Developer/dotfiles
-   ./bootstrap.sh
-   ```
-
-   The template installs Homebrew and its optional command-line tools. It is personal tooling, not part of this shared baseline; review and customise it before running it.
-3. Configure your Git identity and any personal or work SSH host aliases in your own Git and SSH configuration. Generate SSH keys locally if required by your organisation. Upload each **public** key to the relevant GitHub account yourself. Never put a private key, passphrase, token, password, or other secret in this repository, generated cloud-init data, or a bootstrap command.
-4. In Windows VS Code, install the WSL extension if IT Ops has not already provided it. From WSL, open the development directory:
-
-   ```bash
-   cd ~/Developer
-   code .
-   ```
-
-   Confirm VS Code is connected to the WSL distribution. Install Dev Containers and Container Tools in the WSL extension context. Sign in to GitHub Copilot manually in VS Code if you are entitled to use it. The OpenAI Codex extension is optional and must likewise be installed and authenticated manually where organisational policy permits it.
-5. Clone an approved repository using its SSH URL, then open it from WSL:
-
-   ```bash
-   cd ~/Developer
-   git clone <approved-ssh-url>
-   cd <repository>
-   code .
-   ```
-
-   If the repository contains `.devcontainer/devcontainer.json`, select **Dev Containers: Reopen in Container**. The project controls its own runtime and dependencies through that configuration; it should use the Docker Engine already running in WSL.
-
-These steps complete the intended boundary: Windows supplies the graphical VS Code interface, WSL supplies the shared development baseline, and each devcontainer supplies its project-specific environment. CI verifies the Linux analogue only; it does not replace the documented disposable Windows/WSL acceptance test for changes that affect first-launch behaviour.
 
 ## Test the renderer
 
