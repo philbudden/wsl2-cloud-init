@@ -55,11 +55,11 @@ expect_failure malformed-architecture \
 grep -Fq 'Unsupported Docker apt architecture' "$TEMP_ROOT/malformed-architecture.out" || fail 'malformed-architecture error was unclear'
 
 expect_failure missing-user \
-  env WSL_DEVELOPMENT_ENVIRONMENT_OS_RELEASE_FILE=/etc/os-release "$BOOTSTRAP" wsl_bootstrap_missing_user
+  env WSL_DEVELOPMENT_ENVIRONMENT_OS_RELEASE_FILE="$TEMP_ROOT/noble-os-release" "$BOOTSTRAP" wsl_bootstrap_missing_user
 grep -Fq 'Linux user does not exist' "$TEMP_ROOT/missing-user.out" || fail 'missing-user error was unclear'
 
 expect_failure malformed-user \
-  env WSL_DEVELOPMENT_ENVIRONMENT_OS_RELEASE_FILE=/etc/os-release "$BOOTSTRAP" 'BadUser'
+  env WSL_DEVELOPMENT_ENVIRONMENT_OS_RELEASE_FILE="$TEMP_ROOT/noble-os-release" "$BOOTSTRAP" 'BadUser'
 grep -Fq 'Invalid Linux username' "$TEMP_ROOT/malformed-user.out" || fail 'malformed-user error was unclear'
 
 printf 'bootstrap-failure-test.sh: PASS\n'
