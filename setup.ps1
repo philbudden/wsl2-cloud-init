@@ -59,12 +59,12 @@ function Get-RegisteredDistributions {
     if ($useTestRegisteredDistributions) {
         return @($TestRegisteredDistributions)
     }
-    $wsl = Get-Command -Name 'wsl.exe' -CommandType Application -ErrorAction SilentlyContinue
-    if ($null -eq $wsl) {
+    $wsl = @(Get-Command -Name 'wsl.exe' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1)
+    if ($wsl.Count -eq 0) {
         Fail 'wsl.exe was not found. IT Ops must prepare WSL before running this script.'
     }
     try {
-        $names = & $wsl.Source --list --quiet 2>&1
+        $names = & $wsl[0].Source --list --quiet 2>&1
         if ($LASTEXITCODE -ne 0) {
             Fail "wsl.exe --list --quiet failed with exit code $LASTEXITCODE. Confirm that IT Ops WSL preparation is complete."
         }
