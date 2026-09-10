@@ -21,7 +21,7 @@ The script asks only for a Linux username. It validates the name, checks that `U
 For unattended use, supply the username explicitly:
 
 ```powershell
-.\setup.ps1 -LinuxUsername engineer
+powershell.exe -ExecutionPolicy Bypass -File .\setup.ps1 -LinuxUsername engineer
 ```
 
 The script refuses to overwrite existing user-data unless `-Force` is supplied. Use that switch only before first installation, after confirming that `Ubuntu-24.04` has not been installed.
