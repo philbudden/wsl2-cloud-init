@@ -53,7 +53,7 @@ function Assert-LinuxUsername([string]$Username) {
     if ([string]::IsNullOrWhiteSpace($Username)) {
         Fail 'A Linux username is required.'
     }
-    if ($Username.Length -gt 32 -or $Username -notmatch '^[a-z_][a-z0-9_-]*$') {
+    if ($Username.Length -gt 32 -or $Username -cnotmatch '^[a-z_][a-z0-9_-]*$') {
         Fail 'Linux username must be 1-32 characters: lowercase letter or underscore first, then lowercase letters, digits, underscores, or hyphens.'
     }
     if ($Username -in @('root', 'daemon', 'bin', 'sys', 'sync', 'games', 'man', 'lp', 'mail', 'news', 'uucp', 'proxy', 'www-data', 'backup', 'list', 'irc', 'nobody', 'systemd-network', 'systemd-resolve', 'systemd-timesync')) {
