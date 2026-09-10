@@ -120,19 +120,19 @@ foreach ($payload in @(
     @{ Name = 'bootstrap'; Path = $bootstrapPath },
     @{ Name = 'validate'; Path = $validatePath }
 )) {
+    $escapedPath = [regex]::Escape("/usr/local/lib/wsl-development-environment/$($payload.Name).sh")
+    $match = [regex]::Match($rendered, ('path: ' + $escapedPath + '[\s\S]*?content: ([A-Za-z0-9+/=]+)'))
+    if (-not $match.Success) {
+        Fail "Rendering failed: $($payload.Name) payload is missing."
+    }
     try {
-        $escapedPath = [regex]::Escape("/usr/local/lib/wsl-development-environment/$($payload.Name).sh")
-        $match = [regex]::Match($rendered, "path: $escapedPath[\\s\\S]*?content: ([A-Za-z0-9+/=]+)")
-        if (-not $match.Success) {
-            Fail "Rendering failed: $($payload.Name) payload is missing."
-        }
         $decoded = [Convert]::FromBase64String($match.Groups[1].Value)
-        if (-not [System.Linq.Enumerable]::SequenceEqual([byte[]]$decoded, [System.IO.File]::ReadAllBytes($payload.Path))) {
-            Fail "Rendering failed: $($payload.Name) payload does not round-trip."
-        }
     }
     catch {
         Fail "Rendering failed: $($payload.Name) payload is not valid base64. $($_.Exception.Message)"
+    }
+    if (-not [System.Linq.Enumerable]::SequenceEqual([byte[]]$decoded, [System.IO.File]::ReadAllBytes($payload.Path))) {
+        Fail "Rendering failed: $($payload.Name) payload does not round-trip."
     }
 }
 
