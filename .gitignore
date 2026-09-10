@@ -3,3 +3,6 @@
 
 # PowerShell and test artefacts
 TestResults/
+
+# Mac OS
+.DS_Store
