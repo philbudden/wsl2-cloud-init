@@ -13,7 +13,7 @@ This workflow deliberately does not attempt to repair or configure those prerequ
 From PowerShell, in this repository, run:
 
 ```powershell
-.\setup.ps1
+powershell.exe -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
 The script asks only for a Linux username. It validates the name, checks that `Ubuntu-24.04` is not already registered, and writes `%USERPROFILE%\.cloud-init\Ubuntu-24.04.user-data`. The file is a self-contained snapshot: its embedded scripts come from this checkout at generation time. It contains the supplied Linux username, but it contains no passwords, SSH keys, or email addresses.
